@@ -1,0 +1,7 @@
+CREATE TABLE BERICHTEN (
+    id INT NOT NULL,
+    message VARCHAR(100)
+);
+
+INSERT INTO BERICHTEN (id, message)
+VALUES(20001, 'TEST');
