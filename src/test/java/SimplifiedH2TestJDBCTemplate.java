@@ -1,7 +1,9 @@
 import org.example.Bericht;
+import org.example.BerichtService;
 import org.jobrunr.configuration.JobRunr;
 import org.jobrunr.scheduling.BackgroundJob;
 import org.jobrunr.scheduling.cron.Cron;
+import org.jobrunr.server.BackgroundJobServerConfiguration;
 import org.jobrunr.storage.InMemoryStorageProvider;
 import org.jobrunr.storage.StorageProvider;
 import org.junit.After;
@@ -28,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class SimplifiedH2TestJDBCTemplate {
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private BerichtService berichtService;
     private StorageProvider storageProvider;
 
     @Before
@@ -38,39 +40,26 @@ public class SimplifiedH2TestJDBCTemplate {
         JobRunr
                 .configure()
                 .useStorageProvider(storageProvider)
-                .useBackgroundJobServer()
+                .useBackgroundJobServer(BackgroundJobServerConfiguration.usingStandardBackgroundJobServerConfiguration().andPollIntervalInSeconds(5))
                 .initialize();
     }
 
-    public Bericht getBericht() {
-        String sql = "SELECT * FROM BERICHTEN";
-        return (Bericht) jdbcTemplate.queryForObject(
-                sql,
-                new BeanPropertyRowMapper(Bericht.class));
-    }
-
-    public int getCountOfBerichten() {
-        return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM BERICHTEN", Integer.class);
-    }
-
     @Test
-    public void verwijderInDatabase() throws InterruptedException, SQLException {
-        System.out.println("jdbc: " + jdbcTemplate);
-        System.out.println("amount before update: " + getCountOfBerichten());
-        String sql = "UPDATE Berichten SET message='TEST2'";
-        Bericht beforeUpdate = getBericht();
+    public void updateBericht() throws InterruptedException {
+        System.out.println("berichtService=" + berichtService);
+
+        System.out.println("amount before update: " + berichtService.getCountOfBerichten());
+        Bericht beforeUpdate = berichtService.getBericht();
         System.out.println("message before update: " + beforeUpdate.getMessage());
-        BackgroundJob.scheduleRecurrently("id_taak_1", Cron.every15seconds(), () -> {
-            jdbcTemplate.update(sql);
-        });
-        Thread.sleep(20000);
-        Bericht afterUpdate = getBericht();
-        System.out.println("amount before update: " + getCountOfBerichten());
-        System.out.println("message after update: " + afterUpdate);
+        BackgroundJob.scheduleRecurrently("*/5 * * * * *", () -> berichtService.updateBericht());
+        Thread.sleep(10000);
+//        berichtService.updateBericht();
+        Bericht afterUpdate = berichtService.getBericht();
+        System.out.println("amount after update: " + berichtService.getCountOfBerichten());
+        System.out.println("message after update: " + afterUpdate.getMessage());
 
         assertEquals("TEST2", afterUpdate.getMessage());
     }
-
     @After
     public void stopJobRunr() {
         JobRunr.destroy();
