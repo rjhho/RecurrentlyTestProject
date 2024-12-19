@@ -48,16 +48,12 @@ public class SimplifiedH2TestJDBCTemplate {
     public void updateBericht() throws InterruptedException {
         System.out.println("berichtService=" + berichtService);
 
-        System.out.println("amount before update: " + berichtService.getCountOfBerichten());
-        Bericht beforeUpdate = berichtService.getBericht();
+        Bericht beforeUpdate = berichtService.getBericht(20001);
         System.out.println("message before update: " + beforeUpdate.getMessage());
-        BackgroundJob.scheduleRecurrently("*/5 * * * * *", () -> berichtService.updateBericht());
+        BackgroundJob.scheduleRecurrently("*/5 * * * * *", () -> berichtService.updateBericht(20001));
         Thread.sleep(10000);
 //        berichtService.updateBericht();
-        Bericht afterUpdate = berichtService.getBericht();
-        System.out.println("amount after update: " + berichtService.getCountOfBerichten());
-        System.out.println("message after update: " + afterUpdate.getMessage());
-
+        Bericht afterUpdate = berichtService.getBericht(20001);
         assertEquals("TEST2", afterUpdate.getMessage());
     }
     @After
