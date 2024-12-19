@@ -18,8 +18,8 @@ public class BerichtService {
         return jdbcTemplate.update(sql);
     }
 
-    public Bericht getBericht() {
-        String sql = "SELECT * FROM BERICHTEN";
+    public Bericht getBericht(int id) {
+        String sql = "SELECT * FROM BERICHTEN WHERE id=" + id;
         return (Bericht) jdbcTemplate.queryForObject(
                 sql,
                 new BeanPropertyRowMapper(Bericht.class));
