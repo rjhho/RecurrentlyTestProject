@@ -11,10 +11,10 @@ public class BerichtService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public int updateBericht() {
+    public int updateBericht(int id) {
         System.out.println("jdbctemplate is: " + jdbcTemplate);
         System.out.println("code has been reached aka updateBericht");
-        String sql = "UPDATE Berichten SET message='TEST2'";
+        String sql = "UPDATE Berichten SET message='TEST2' WHERE id=" + id;
         return jdbcTemplate.update(sql);
     }
 
